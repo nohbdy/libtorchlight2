@@ -1,0 +1,22 @@
+//--------------------------------------
+//--- 010 Editor v4.0.2 Binary Template
+//
+// File: tl2shared.bt
+// Author: nohbdy
+// Revision: 1
+// Purpose: Shared structs for Torchlight 2 file formats
+//--------------------------------------
+
+typedef struct {
+    ushort length;
+    if (length > 0)
+        wchar_t data[length];
+} Tl2String <read=ReadTl2String, optimize=false>;
+
+wchar_t[] ReadTl2String( Tl2String& str) {
+    if (exists(str.data)) {
+        return str.data;
+    } else {
+        return "";
+    }
+}

@@ -1,0 +1,118 @@
+//--------------------------------------
+//--- 010 Editor v4.0.2 Binary Template
+//
+// File: tl2dat.bt
+// Author: nohbdy
+// Revision: 1
+// Purpose: Parse Torchlight 2 DAT files
+//--------------------------------------
+
+#include "tl2shared.bt"
+
+// Data Structures
+typedef struct {
+    int unk0;       // Version?
+    int numStrings;
+} DatHeader;
+
+DatHeader header;
+
+typedef struct {
+    uint id <format=hex>;
+    Tl2String str;
+} StringTableEntry <read=ReadStringTableEntry>;
+
+char[] ReadStringTableEntry(StringTableEntry& t) {
+    char buff[t.str.length + 20];
+    SPrintf(buff, "%5.X: %s", t.id, t.str.data);
+    return buff;
+}
+
+local int i;
+for (i = 0; i < header.numStrings; i++) {
+    StringTableEntry str;
+}
+
+enum <int> FieldType {
+    Type_Int = 1,
+    Type_Float = 2,
+    Type_String = 5,
+    Type_Bool = 6,
+    Type_7 = 7,
+    Type_String2 = 8  // Description? Printable Text?
+};
+
+typedef struct {
+    uint id <format=hex>;
+    FieldType dataType;
+    if (dataType == Type_Int)
+        int int_value;
+    if (dataType == Type_Float)
+        float float_value;
+    if ((dataType == Type_String) || (dataType == Type_String2))
+        uint string_id;
+    if (dataType == Type_Bool)
+        uint bool_value;
+    if (dataType == Type_7)
+        uint64 uint64_value;
+} ObjectField <read=ReadObjectField,optimize=false>;
+
+string ReadObjectField(ObjectField& f) {
+    string buff;
+    if (f.dataType == Type_Int) {
+        SPrintf(buff, "[%08X] Int: %d", f.id, f.int_value);
+    } else if (f.dataType == Type_Float) {
+        SPrintf(buff, "[%08X] float: %f", f.id, f.float_value);
+    } else if ((f.dataType == Type_String) || (f.dataType == Type_String2)) {
+        local int j = 0;
+        while (j < header.numStrings) {
+            if (f.string_id == str[j].id) {
+                SPrintf(buff, "[%08X] string: %#.05x - %s", f.id, f.string_id, str[j].str.data);
+                return buff;
+            }
+            j++;
+        }
+        SPrintf(buff, "[%08X] string: %5.X - ???", f.id, f.string_id);
+    } else if (f.dataType == Type_Bool) {
+        if (f.bool_value == 1) {
+            SPrintf(buff, "[%08X] Bool: TRUE", f.id);
+        } else if (f.bool_value == 0) {
+            SPrintf(buff, "[%08X] Bool: FALSE", f.id);
+        } else {
+            SPrintf(buff, "[%08X] Bool: Broken (%d)", f.id, f.bool_value);
+        }
+    } else if (f.dataType == Type_7) {
+        SPrintf(buff, "[%08X] Type7: %Lx", f.id, f.uint64_value);
+    } else {
+        SPrintf(buff, "[%08X] Unknown Type: %d", f.id, f.dataType);
+    }
+    return buff;
+}
+
+typedef struct {
+    uint id <format=hex>;
+    uint numFields;
+    if (numFields > 0)
+        ObjectField fields[numFields];
+    int numChildren; // more DatObject structs following this one have this DatObject as their parent .. not sure how to model this recursion in a template
+    // DatObject children[numChildren]; // Doesnt work!
+} DatObject <read=ReadDatObject>;
+
+string ReadDatObject(DatObject& obj) {
+    string s;
+    SPrintf(s, "Object 0x%X (%d children)", obj.id, obj.numChildren);
+    return s;
+}
+
+// Parse File
+
+local int toggle = 0;
+while (!FEof()) {
+    if (toggle) {
+        SetBackColor( 0xffc0c0 );
+    } else {
+        SetBackColor( cNone );
+    }
+    toggle = !toggle;
+    DatObject obj;
+}

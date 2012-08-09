@@ -1,0 +1,29 @@
+//--------------------------------------
+//--- 010 Editor v4.0.2 Binary Template
+//
+// File: tl2raw.bt
+// Author: nohbdy
+// Revision: 1
+// Purpose: Parse .RAW files from Torchlight 2
+//--------------------------------------
+
+#include "tl2shared.bt"
+
+// Data Structures
+typedef struct {
+    int numStrings;
+} RawHeader;
+
+typedef struct {
+    int unk0;
+    int unk1;
+} Whatever;
+
+typedef struct {
+    int count;
+    Whatever data[count];
+} Chunk <optimize=false>;
+
+RawHeader header;
+Tl2String strings[header.numStrings];
+Chunk chunks[header.numStrings];
