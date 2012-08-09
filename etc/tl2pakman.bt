@@ -1,0 +1,95 @@
+//--------------------------------------
+//--- 010 Editor v4.0.2 Binary Template
+//
+// File: tl2pakman.bt
+// Author: nohbdy
+// Revision: 1
+// Purpose: Parse PAK.MAN files used in Torchlight 2
+//--------------------------------------
+
+typedef struct {
+    short zero;
+    short rootPathLen;
+    if (rootPathLen > 0)
+        wchar_t rootPath[rootPathLen];
+    uint unk0;
+    uint numDirectories;
+} PakManHeader;
+
+enum <byte> FileType {
+    FileType_Dat = 0, // Also .TEMPLATE
+	FileType_Layout = 1,
+	FileType_Mesh = 2,
+	FileType_Skeleton = 3,
+	FileType_DDS = 4,
+	FileType_PNG = 5,
+	FileType_Sound = 6,
+	FileType_Directory = 7,
+	FileType_Material = 8,
+	FileType_Raw = 9,
+	FileType_ImageSet = 11,
+	FileType_TTF = 12,
+	FileType_Font = 13,
+	FileType_HIE = 17,
+	FileType_Animation = 16,
+	FileType_Scheme = 19,
+	FileType_LookNFeel = 20,
+	FileType_MPD = 21,
+	FileType_Unknown = 0xFF
+};
+
+typedef struct {
+    uint unk_0;
+    FileType fileType;
+    short nameLen;              // Length of name (in wchars)
+    if (nameLen > 0)
+        wchar_t name[nameLen];  // No trailing zero
+    uint offset;                // Offset into the associated PAK file where this file begins
+    uint uncompressedSize;      // Uncompressed size (should match PAK file)
+    FILETIME lastModified;
+} FileRef <read=ReadFileRef,optimize=false>;
+
+typedef struct {
+    short pathLen;  // Length of path (in wchars)
+    if (pathLen > 0)
+        wchar_t path[pathLen]; // No trailing zero
+    uint numFiles; // How many files are in this directory
+    if (numFiles > 0)
+        FileRef files[numFiles];
+} Directory <read=ReadDirectory,optimize=false>;
+
+wchar_t[] ReadFileRef( FileRef &file ) {
+    if ( exists(file.name) ) {
+        return file.name;
+    } else {
+        return "";
+    }
+}
+
+wchar_t[] ReadDirectory( Directory &dir ) {
+    if ( exists(dir.path) ) {
+        return dir.path;
+    } else {
+        return "";
+    }
+}
+
+LittleEndian();
+PakManHeader header;
+local int toggle = 0;
+local int numDirs = 0;
+local int numFiles = 0;
+while (!FEof()) {
+    if (toggle == 0) {
+        SetBackColor( 0xffc0c0 );
+        toggle = 1;
+    } else {
+        SetBackColor( cNone );
+        toggle = 0;
+    }
+    Directory dir;
+    numDirs = numDirs + 1;
+    numFiles = numFiles + dir.numFiles;
+}
+Printf("Num Files = %d\n", numFiles);
+Printf("Num Directories = %d\n", numDirs);

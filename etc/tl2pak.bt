@@ -1,0 +1,37 @@
+//--------------------------------------
+//--- 010 Editor v4.0.2 Binary Template
+//
+// File: tl2pak.bt
+// Author: nohbdy
+// Revision: 1
+// Purpose: Parse PAK files used in Torchlight 2
+//--------------------------------------
+
+typedef struct {
+    uint uncompressedSize;
+    uint compressedSize;
+    if (compressedSize > 0)
+        char compressedData[compressedSize];
+} PakFileRecord <optimize=false>;
+
+typedef struct {
+    short unk_offs00;
+    short unk_offs02;
+} PakArchiveHeader;
+
+LittleEndian();
+PakArchiveHeader header;
+local int toggle;
+local int numFiles = 0;
+while (!FEof()) {
+    if (toggle == 0) {
+        SetBackColor( 0xffc0c0 );
+        toggle = 1;
+    } else {
+        SetBackColor( cNone );
+        toggle = 0;
+    }
+    PakFileRecord record;
+    numFiles = numFiles + 1;
+}
+Printf("Found %d files", numFiles);
