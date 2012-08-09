@@ -26,6 +26,6 @@ Immediately following the ``ArchiveHeader`` comes a number of ``FileData``s.  Th
 		uint8_t data[compressed_size];
 	} FileData;
 
-``uncompressed_size`` is the size in bytes of the file after decompression
-``compressed_size`` is the size in bytes of the compressed file
-``data`` is the compressed file data and is ``compressed_size`` bytes in length.  The compressed data is a zlib stream.
+``uncompressed_size`` is the size in bytes of the file after decompression  
+``compressed_size`` is the size in bytes of the compressed file  
+``data`` is the compressed file data and is ``compressed_size`` bytes in length.  The compressed data is a zlib stream.  
