@@ -89,14 +89,17 @@ string ReadObjectField(ObjectField& f) {
     return buff;
 }
 
+struct DatObject;
+
 typedef struct {
     uint id <format=hex>;
     uint numFields;
     if (numFields > 0)
         ObjectField fields[numFields];
     int numChildren; // more DatObject structs following this one have this DatObject as their parent .. not sure how to model this recursion in a template
-    // DatObject children[numChildren]; // Doesnt work!
-} DatObject <read=ReadDatObject>;
+    if (numChildren > 0)
+        DatObject children[numChildren]; // Doesnt work!
+} DatObject <read=ReadDatObject, optimize=false>;
 
 string ReadDatObject(DatObject& obj) {
     string s;
